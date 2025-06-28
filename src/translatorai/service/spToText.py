@@ -4,6 +4,7 @@ import pyaudio
 import numpy as np
 import soundfile as sf
 import time
+import sys
 import gc
 
 class speechToText:
@@ -99,3 +100,9 @@ class speechToText:
             stream.close()
             p.terminate()
             print("Stream cerrado y PyAudio terminado.")
+
+    def clear_console(self):
+        if sys.platform == "win32":
+            os.system("cls")
+        else:
+            os.system("clear")

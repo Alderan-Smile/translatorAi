@@ -20,6 +20,7 @@ for i in range(p.get_device_count()):
         print(f"{i}: {info['name']}")
 
 device_index = int(input("Selecciona el índice del audio a usar: "))
+talkToText.clear_console()
 
 print("Selecciona el modelo de Whisper:")
 print("1. base")
@@ -38,5 +39,7 @@ elif model_choice == "4":
 else:
     print("Modelo no válido, usando 'medium' por defecto.")
     WHISPER_MODEL = "medium"
+
+talkToText.clear_console()
 
 talkToText.escuchar(device_index, WHISPER_MODEL)
