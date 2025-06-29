@@ -10,6 +10,7 @@ if sys.platform == "win32":
 translat = translatorFull()
 talkToText = speechToText()
 p = pyaudio.PyAudio()
+nameDevice: str = ""
 
 #inputText = "Bienvenido invocador, ¿cómo estás?, soy un bot de traducción, ¿en qué puedo ayudarte hoy?"
 #translat.realSub(inputText)
@@ -22,8 +23,9 @@ default_host_api_index = p.get_default_host_api_info()["index"]
 for i in range(p.get_device_count()):
     info = p.get_device_info_by_index(i)
     if info["maxInputChannels"] > 0 and info["hostApi"] == default_host_api_index:
-        input_devices.append((i, info["name"]))
-        print(f"{i}: {info['name']}")
+        deviceName = talkToText.decodeString(info["name"])
+        input_devices.append((i, deviceName))
+        print(f"{i}: {deviceName}")
 
 if not input_devices:
     print("No hay dispositivos de entrada de audio habilitados.")
@@ -35,14 +37,17 @@ output_devices = []
 for i in range(p.get_device_count()):
     info = p.get_device_info_by_index(i)
     if info["maxOutputChannels"] > 0 and info["hostApi"] == default_host_api_index:
-        output_devices.append((i, info["name"]))
-        print(f"{i}: {info['name']}")
+        deviceName = talkToText.decodeString(info["name"])
+        output_devices.append((i, deviceName))
+        print(f"{i}: {deviceName}")
 
 if not output_devices:
     print("No hay dispositivos de salida de audio habilitados.")
 
 device_index = int(input("\nSelecciona el índice del audio de entrada a usar: "))
-talkToText.clear_console()
+nameDevice = talkToText.decodeString(p.get_device_info_by_index(device_index)['name'])
+for _ in range(14):
+    print('\033[F\033[K', end='')  # Limpiar líneas anteriores
 
 
 # Mostrar modelos de Whisper disponibles
@@ -53,6 +58,8 @@ print("3. medium")
 print("4. large")
 print("5. turbo")
 model_choice = input("Ingresa el número del modelo: ").strip()
+for _ in range(7):
+    print('\033[F\033[K', end='')
 if model_choice == "1":
     WHISPER_MODEL = "base"
 elif model_choice == "2":
@@ -67,6 +74,5 @@ else:
     print("Modelo no válido, usando 'medium' por defecto.")
     WHISPER_MODEL = "medium"
 
-talkToText.clear_console()
 
-talkToText.escuchar(device_index, WHISPER_MODEL)
+talkToText.escuchar(device_index, WHISPER_MODEL, nameDevice)

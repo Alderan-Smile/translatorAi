@@ -7,10 +7,14 @@ import time
 import sys
 import gc
 import datetime
+if sys.platform == "win32":
+    import os
+    os.system("chcp 65001")
+    sys.stdout.reconfigure(encoding='utf-8')
 
 class speechToText:
 
-    def escuchar(self, device_index, WHISPER_MODEL):
+    def escuchar(self, device_index, WHISPER_MODEL,name_device):
         
         #WHISPER_MODEL = "medium"  # Puedes cambiar a "base", "small", "medium", "large" según tus necesidades
 
@@ -58,38 +62,19 @@ class speechToText:
                 transcribed_text = result["text"].strip()
                 end_time = time.time()
                 energy = np.linalg.norm(audio_float32)
+                latencia = end_time - start_time
+                print(f"[{name_device}] Latencia: {latencia:.2f}s | Energía: {energy:.3f}   ", end='\r')
                 frases_ignoradas = [
-                    "thanks for watching!<br>\n",
-                    "gracias por ver!<br>\n",
-                    "thanks for watching!<br>",
-                    "thanks for watching!",
-                    "thanks for watching",
-                    "bye!<br>\n",
-                    "bye!<br>",
-                    "bye!",
-                    "bye",
-                    "done.<br>\n",
-                    "done.<br>",
-                    "done.",
-                    "done",
-                    "see you later!<br>\n",
-                    "see you later!<br>",
-                    "see you later!",
-                    "see you later",
-                    "thanks you!",
-                    "thanks you for watching!<br>\n",
-                    "thanks you for watching!<br>",
-                    "thanks you for watching!",
-                    "thanks you for watching",
+                    "Thank you for watching!",
+                    "Thanks for watching!"
                 ]
-                if transcribed_text and energy > 0.09 and transcribed_text.lower() not in frases_ignoradas:
-                    #print(f"[Latencia: {end_time - start_time:.2f}s] Tú: {transcribed_text}")
+                if transcribed_text and energy > 0.200 and transcribed_text not in frases_ignoradas:
                     timestamp = time.time()
                     cola_subtitulos.append((transcribed_text, timestamp))
                     with open(TXT_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{transcribed_text}<br>\n")
                     with open(TXT_FILE2, "a", encoding="utf-8") as f2:
-                        f2.write(f"{transcribed_text}<br>\n")
+                        f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] Tu: {transcribed_text}\n")
                 
                 ahora = time.time()
                 cola_subtitulos = [(txt, t) for txt, t in cola_subtitulos if ahora - t < 2]
@@ -110,7 +95,10 @@ class speechToText:
             print("Stream cerrado y PyAudio terminado.")
 
     def clear_console(self):
-        if sys.platform == "win32":
-            os.system("cls")
-        else:
-            os.system("clear")
+        print('\r' + ' ' * 120 + '\r', end='')
+
+    def decodeString(self, string):
+        try:
+            return string.encode('latin1').decode('utf-8')
+        except UnicodeDecodeError:
+            return string.encode('cp1252').decode('utf-8', errors='ignore')
