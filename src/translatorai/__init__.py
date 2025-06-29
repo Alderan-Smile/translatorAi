@@ -57,6 +57,8 @@ print("2. small")
 print("3. medium")
 print("4. large")
 print("5. turbo")
+print("6. large-v2")
+print("7. large-v3")
 model_choice = input("Ingresa el número del modelo: ").strip()
 for _ in range(7):
     print('\033[F\033[K', end='')
@@ -70,6 +72,10 @@ elif model_choice == "4":
     WHISPER_MODEL = "large"
 elif model_choice == "5":
     WHISPER_MODEL = "turbo"
+elif model_choice == "6":
+    WHISPER_MODEL = "large-v2"
+elif model_choice == "7":
+    WHISPER_MODEL = "large-v3"
 else:
     print("Modelo no válido, usando 'medium' por defecto.")
     WHISPER_MODEL = "medium"
