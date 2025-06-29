@@ -9,7 +9,7 @@ import gc
 
 class speechToText:
 
-    def escuchar(self, device_index,WHISPER_MODEL):
+    def escuchar(self, device_index, WHISPER_MODEL, input_lang="es",type="transcribe"):
         
         #WHISPER_MODEL = "medium"  # Puedes cambiar a "base", "small", "medium", "large" según tus necesidades
 
@@ -46,8 +46,9 @@ class speechToText:
                 result = model.transcribe(
                     audio_float32, 
                     fp16=False, 
-                    language="es", 
-                    task="translate")
+                    language=input_lang, 
+                    task="transcribe" if type != "transcribe" else "translate"
+                )
                 transcribed_text = result["text"].strip()
                 end_time = time.time()
                 energy = np.linalg.norm(audio_float32)
