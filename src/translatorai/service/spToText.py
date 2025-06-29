@@ -9,7 +9,7 @@ import gc
 
 class speechToText:
 
-    def escuchar(self, device_index, WHISPER_MODEL, input_lang="es",type="transcribe"):
+    def escuchar(self, device_index, WHISPER_MODEL):
         
         #WHISPER_MODEL = "medium"  # Puedes cambiar a "base", "small", "medium", "large" según tus necesidades
 
@@ -46,9 +46,8 @@ class speechToText:
                 result = model.transcribe(
                     audio_float32, 
                     fp16=False, 
-                    language=input_lang, 
-                    task="transcribe" if type != "transcribe" else "translate"
-                )
+                    language="es", 
+                    task="translate")
                 transcribed_text = result["text"].strip()
                 end_time = time.time()
                 energy = np.linalg.norm(audio_float32)
@@ -81,11 +80,11 @@ class speechToText:
                     with open(TXT_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{transcribed_text}<br>\n")
                 
-                if time.time() - last_cleanup > 3:
+                if time.time() - last_cleanup > 2:
                     if os.path.exists(TXT_FILE):
                         with open(TXT_FILE, "r", encoding="utf-8") as f:
                             lines = f.readlines()
-                        if len(lines) > 1:
+                        if len(lines) > 0:
                             with open(TXT_FILE, "w", encoding="utf-8") as f:
                                 f.writelines(lines[1:])
                     last_cleanup = time.time()
