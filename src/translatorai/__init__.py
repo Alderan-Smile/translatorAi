@@ -60,7 +60,7 @@ print("5. turbo")
 print("6. large-v2")
 print("7. large-v3")
 model_choice = input("Ingresa el número del modelo: ").strip()
-for _ in range(7):
+for _ in range(9):
     print('\033[F\033[K', end='')
 if model_choice == "1":
     WHISPER_MODEL = "base"
