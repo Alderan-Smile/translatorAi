@@ -6,6 +6,7 @@ import soundfile as sf
 import time
 import sys
 import gc
+import datetime
 
 class speechToText:
 
@@ -21,10 +22,14 @@ class speechToText:
         RATE = 16000
         CHUNK_SIZE_MS = 3000
         CHUNK = int(RATE * CHUNK_SIZE_MS / 1000)
+        fecha_hora = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         TXT_FILE = "./subtitle/subt.txt"
+        TXT_FILE2 = f"./subtitle/backup_{fecha_hora}.txt"
 
         os.makedirs(os.path.dirname("./subtitle/"), exist_ok=True)
         with open(TXT_FILE, "a", encoding="utf-8"):
+            pass
+        with open(TXT_FILE2, "a", encoding="utf-8"):
             pass
 
         p = pyaudio.PyAudio()
@@ -37,6 +42,8 @@ class speechToText:
         print("Grabando audio...")
 
         last_cleanup = time.time()
+        cola_subtitulos = []
+
         try:
             while True:
                 data = stream.read(CHUNK, exception_on_overflow=False)
@@ -77,17 +84,18 @@ class speechToText:
                 ]
                 if transcribed_text and energy > 0.09 and transcribed_text.lower() not in frases_ignoradas:
                     #print(f"[Latencia: {end_time - start_time:.2f}s] Tú: {transcribed_text}")
+                    timestamp = time.time()
+                    cola_subtitulos.append((transcribed_text, timestamp))
                     with open(TXT_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{transcribed_text}<br>\n")
+                    with open(TXT_FILE2, "a", encoding="utf-8") as f2:
+                        f2.write(f"{transcribed_text}<br>\n")
                 
-                if time.time() - last_cleanup > 2:
-                    if os.path.exists(TXT_FILE):
-                        with open(TXT_FILE, "r", encoding="utf-8") as f:
-                            lines = f.readlines()
-                        if len(lines) > 0:
-                            with open(TXT_FILE, "w", encoding="utf-8") as f:
-                                f.writelines(lines[1:])
-                    last_cleanup = time.time()
+                ahora = time.time()
+                cola_subtitulos = [(txt, t) for txt, t in cola_subtitulos if ahora - t < 2]
+                with open(TXT_FILE, "w", encoding="utf-8") as f:
+                    for txt, _ in cola_subtitulos:
+                        f.write(f"{txt}<br>\n")
                 
                 del audio_data
                 del audio_float32
