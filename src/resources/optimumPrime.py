@@ -23,3 +23,4 @@ model_int8 = OVModelForSeq2SeqLM.from_pretrained(model_id, export=True, quantiza
 model_int8.save_pretrained(save_dir8)
 
 ## ct2-transformers-converter --model openai/whisper-large-v2 --output_dir faster-whisper-large-v2-int8 --quantization int8
+## ct2-transformers-converter --model openai/whisper-medium --output_dir faster-whisper-medium-int8 --quantization int8
