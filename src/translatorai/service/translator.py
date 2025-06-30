@@ -1,6 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import datetime
 import time
+import os
 
 class translatorFull:
     
@@ -9,7 +10,7 @@ class translatorFull:
         cola_subtitulos = []
         
         # Ruta local al modelo NLLB-200-distilled-600M INT8
-        local_model_path = "./src/resources/nllb-200-distilled-600M-int8"
+        local_model_path = os.path.abspath("../resources/nllb-200-distilled-600M-int8")
         tokenizer = AutoTokenizer.from_pretrained(local_model_path)
         model = AutoModelForSeq2SeqLM.from_pretrained(local_model_path)
 

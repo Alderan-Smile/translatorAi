@@ -7,7 +7,7 @@ import time
 import sys
 import gc
 import datetime
-from translator import translatorFull
+from service.translator import translatorFull
 if sys.platform == "win32":
     import os
     os.system("chcp 65001")
@@ -15,12 +15,12 @@ if sys.platform == "win32":
 
 class speechToText:
 
-    def escuchar(self, device_index, WHISPER_MODEL,name_device):
+    def escuchar(self, device_index, name_device):
 
         translat = translatorFull()
         
         # Ruta local al modelo Faster-Whisper large-v2 INT8
-        local_model_path = "./src/resources/faster-whisper-large-v2-int8"
+        local_model_path = os.path.abspath("../resources/faster-whisper-large-v2-int8")
         model = WhisperModel(local_model_path, device="cpu", compute_type="int8")
         print(f"Modelo Faster-Whisper cargado desde: {local_model_path}")
 
