@@ -404,3 +404,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+**/faster-whisper-**-int8/*
+**/nllb-200-distilled-600M**/*
+**/subtitle/*
