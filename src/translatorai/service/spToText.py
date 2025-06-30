@@ -1,5 +1,5 @@
 import os
-import whisper
+from faster_whisper import WhisperModel
 import pyaudio
 import numpy as np
 import soundfile as sf
@@ -14,15 +14,15 @@ if sys.platform == "win32":
 
 class speechToText:
 
-    def escuchar(self, device_index, WHISPER_MODEL,name_device):
+    def escuchar(self, device_index, name_device, modelo_audio,channels_device):
         
-        #WHISPER_MODEL = "medium"  # Puedes cambiar a "base", "small", "medium", "large" según tus necesidades
-
-        model = whisper.load_model(WHISPER_MODEL)
-        print(f"Modelo cargado: {WHISPER_MODEL}")
+        print(f"Modelo Whiper Cargado: {modelo_audio}")
+        print(f"Canales usados por {name_device}: {channels_device}")
+        local_model_path = os.path.abspath(f"../resources/faster-whisper-{modelo_audio}-int8")
+        model = WhisperModel(local_model_path, device="cuda", compute_type="int8")
 
         FORMAT = pyaudio.paInt16
-        CHANNELS = 1
+        CHANNELS = channels_device
         RATE = 16000
         CHUNK_SIZE_MS = 3000
         CHUNK = int(RATE * CHUNK_SIZE_MS / 1000)
@@ -51,17 +51,16 @@ class speechToText:
         try:
             while True:
                 data = stream.read(CHUNK, exception_on_overflow=False)
-                audio_data = np.frombuffer(data, dtype=np.int16)
-                audio_float32 = audio_data.astype(np.float32) / 32768.0
+                audio_np = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
+
+                transcribed_text = ""
                 start_time = time.time()
-                result = model.transcribe(
-                    audio_float32, 
-                    fp16=False, 
-                    language="es", 
-                    task="translate")
-                transcribed_text = result["text"].strip()
+                segments, info = model.transcribe(audio_np, beam_size=5, language="es", task="translate")
+                for segment in segments:
+                    transcribed_text += segment.text.strip() + " "
+                transcribed_text = transcribed_text.strip()
                 end_time = time.time()
-                energy = np.linalg.norm(audio_float32)
+                energy = np.linalg.norm(audio_np)
                 latencia = end_time - start_time
                 print(f"[{name_device}] Latencia: {latencia:.2f}s | Energía: {energy:.3f}   ", end='\r')
                 frases_ignoradas = [
@@ -82,8 +81,7 @@ class speechToText:
                     for txt, _ in cola_subtitulos:
                         f.write(f"{txt}<br>\n")
                 
-                del audio_data
-                del audio_float32
+                del audio_np
                 gc.collect()
                 
         except KeyboardInterrupt:

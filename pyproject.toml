@@ -13,7 +13,11 @@ dependencies = [
     "numpy",
     "soundfile",
     "transformers",
-    "torch"
+    "torch",
+    "optimum[openvino]",
+    "faster-whisper",
+    "ctranslate2",
+    "sentencepiece",
 ]
 
 [tool.poetry]
