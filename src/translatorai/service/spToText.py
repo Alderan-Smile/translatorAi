@@ -21,7 +21,7 @@ class speechToText:
         
         # Ruta local al modelo Faster-Whisper large-v2 INT8
         local_model_path = os.path.abspath("../resources/faster-whisper-large-v2-int8")
-        model = WhisperModel(local_model_path, device="cpu", compute_type="int8")
+        model = WhisperModel(local_model_path, device="cuda", compute_type="int8")
         print(f"Modelo Faster-Whisper cargado desde: {local_model_path}")
 
         FORMAT = pyaudio.paInt16
@@ -30,7 +30,9 @@ class speechToText:
         CHUNK_SIZE_MS = 3000
         CHUNK = int(RATE * CHUNK_SIZE_MS / 1000)
         fecha_hora = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        TXT_FILE2 = f"./src/translatorai/subtitle/backup_{fecha_hora}.txt"
+        TXT_FILE = "./subtitle/subt.txt"
+        TXT_FILE2 = f"./subtitle/backup_{fecha_hora}.txt"
+        TXT_FILE3 = f"./subtitle/backuptrad_{fecha_hora}.txt"
 
         os.makedirs(os.path.dirname("./src/translatorai/subtitle/"), exist_ok=True)
         with open(TXT_FILE2, "a", encoding="utf-8"):
@@ -61,14 +63,17 @@ class speechToText:
                 latencia = end_time - start_time
                 print(f"[{name_device}] Latencia: {latencia:.2f}s | Energía: {energy:.3f}   ", end='\r')
                 frases_ignoradas = [
-                    "Thank you for watching!",
-                    "Thanks for watching!"
+                    "¡Gracias por ver el vídeo!",
+                    "¡Adiós!",
+                    "¡Gracias por ver!",
+                    "Subtítulos realizados por la comunidad de Amara.org",
+                    "Gracias por ver"
                 ]
                 if transcribed_text and energy > 0.200 and transcribed_text not in frases_ignoradas:
-                    translat.realSub(transcribed_text)
+                    translat.realSub(transcribed_text,TXT_FILE,TXT_FILE3)
                     with open(TXT_FILE2, "a", encoding="utf-8") as f2:
                         f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] Tu: {transcribed_text}\n")
-
+                translat.comprobadorSubtitulos(TXT_FILE)
                 del audio_data
                 del audio_float32
                 gc.collect()

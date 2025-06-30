@@ -407,3 +407,4 @@ FodyWeavers.xsd
 **/faster-whisper-large-v2-int8/*
 **/nllb-200-distilled-600M-int8/*
 **/nllb-200-distilled-600M-int4/*
+**/subtitle/*
