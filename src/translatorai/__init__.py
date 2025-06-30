@@ -1,4 +1,3 @@
-from service.translator import translatorFull
 from service.spToText import speechToText
 import pyaudio
 import sys
@@ -7,7 +6,6 @@ if sys.platform == "win32":
     os.system("chcp 65001")
     sys.stdout.reconfigure(encoding='utf-8')
 
-translat = translatorFull()
 talkToText = speechToText()
 p = pyaudio.PyAudio()
 nameDevice: str = ""
