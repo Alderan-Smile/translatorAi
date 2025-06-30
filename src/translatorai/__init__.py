@@ -47,5 +47,23 @@ nameDevice = talkToText.decodeString(p.get_device_info_by_index(device_index)['n
 for _ in range(14):
     print('\033[F\033[K', end='')  # Limpiar líneas anteriores
 
+print("\nSelecciona el modelo de traducción a utilizar:")
+print("1: NLLB-200-distilled-600M INT8 (Optimum/OpenVINO, solo Intel CPU o GPU)")
+print("2: NLLB-200-distilled-600M INT4 (Optimum/OpenVINO, solo Intel CPU o GPU)")
+print("3: NLLB-200-distilled-600M ORIGINAL (PyTorch, soporta GPU Nvidia)")
 
-talkToText.escuchar(device_index, nameDevice)
+opcion = input("Ingresa el número de modelo (1/2/3): ").strip()
+if opcion == "1":
+    modelo_traductor = "INT8"
+elif opcion == "2":
+    modelo_traductor = "INT4"
+elif opcion == "3":
+    modelo_traductor = "ORIGINAL"
+else:
+    print("Opción no válida, usando modelo ORIGINAL por defecto.")
+    modelo_traductor = "ORIGINAL"
+for _ in range(5):
+    print('\033[F\033[K', end='') 
+print(f"Modelo seleccionado: {modelo_traductor}\n")
+
+talkToText.escuchar(device_index, nameDevice, modelo_traductor)

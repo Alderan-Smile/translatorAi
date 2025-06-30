@@ -15,7 +15,7 @@ if sys.platform == "win32":
 
 class speechToText:
 
-    def escuchar(self, device_index, name_device):
+    def escuchar(self, device_index, name_device,modelo_traduccion):
 
         translat = translatorFull()
         
@@ -67,10 +67,17 @@ class speechToText:
                     "¡Adiós!",
                     "¡Gracias por ver!",
                     "Subtítulos realizados por la comunidad de Amara.org",
-                    "Gracias por ver"
+                    "Gracias por ver",
+                    "y nos vemos en el próximo video",
+                    "¡Gracias!"
                 ]
                 if transcribed_text and energy > 0.200 and transcribed_text not in frases_ignoradas:
-                    translat.realSub(transcribed_text,TXT_FILE,TXT_FILE3)
+                    if modelo_traduccion=="INT8":
+                        translat.subI8(transcribed_text,TXT_FILE,TXT_FILE3)
+                    elif modelo_traduccion=="INT4":
+                        translat.subI4(transcribed_text,TXT_FILE,TXT_FILE3)
+                    else:
+                        translat.subOr(transcribed_text,TXT_FILE,TXT_FILE3)
                     with open(TXT_FILE2, "a", encoding="utf-8") as f2:
                         f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] Tu: {transcribed_text}\n")
                 translat.comprobadorSubtitulos(TXT_FILE)
