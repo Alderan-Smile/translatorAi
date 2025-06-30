@@ -75,7 +75,8 @@ class speechToText:
                         "Subtítulos realizados por la comunidad de Amara.org",
                         "Gracias por ver",
                         "y nos vemos en el próximo video",
-                        "¡Gracias!"
+                        "¡Gracias!",
+                        "¡Suscríbete al canal y dale a la campanita!"
                     ]
                     if transcribed_text and energy > 0.200 and transcribed_text not in frases_ignoradas:
                         # Enviar a la cola para traducir
