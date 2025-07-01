@@ -1,0 +1,10 @@
+faster-whisper
+pyaudio
+numpy
+soundfile
+transformers
+torch
+optimum[openvino]
+ctranslate2
+sentencepiece
+setuptools<81
