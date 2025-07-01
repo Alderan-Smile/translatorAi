@@ -29,13 +29,16 @@ class speechToText:
         fecha = datetime.datetime.now().strftime("%Y-%m-%d")
         hora = datetime.datetime.now().strftime("%H:%M:%S")
         TXT_FILE = "./subtitle/subt.txt"
-        TXT_FILE2 = f"./subtitle/backup_{fecha}.txt"
+        #TXT_FILE2 = f"./subtitle/backup_{fecha}.txt"
+        #TXT_FILE3 = f"./subtitle/Segmento_{fecha}.txt"
 
         os.makedirs(os.path.dirname("./subtitle/"), exist_ok=True)
         with open(TXT_FILE, "a", encoding="utf-8"):
             pass
-        with open(TXT_FILE2, "a", encoding="utf-8"):
-            pass
+        #with open(TXT_FILE2, "a", encoding="utf-8"):
+            #pass
+        #with open(TXT_FILE3, "a", encoding="utf-8"):
+            #pass
 
         p = pyaudio.PyAudio()
         stream = p.open(format=FORMAT, 
@@ -45,6 +48,10 @@ class speechToText:
                         input_device_index=device_index,
                         frames_per_buffer=CHUNK)
         print("Grabando audio...")
+        frases_ignoradas = [
+            "Thank you for watching!",
+            "Thanks for watching!",
+        ]
 
         last_cleanup = time.time()
         cola_subtitulos = []
@@ -58,23 +65,23 @@ class speechToText:
                 start_time = time.time()
                 segments, info = model.transcribe(audio_np, beam_size=5, language="es", task="translate")
                 for segment in segments:
-                    transcribed_text += segment.text.strip() + " "
+                    segmentodsTrip = segment.text.strip()
+                    #with open(TXT_FILE3, "a", encoding="utf-8") as f2:
+                        #f2.write(f" ({name_device}) {hora} - Segmento Tu: {segmentodsTrip}\n")
+                    if segmentodsTrip not in frases_ignoradas:
+                        transcribed_text += segment.text.strip() + " "
                 transcribed_text = transcribed_text.strip()
                 end_time = time.time()
                 energy = np.linalg.norm(audio_np)
                 latencia = end_time - start_time
                 print(f"[{name_device}] Latencia: {latencia:.2f}s | Energía: {energy:.3f} ", end='\r')
-                frases_ignoradas = [
-                    "Thank you for watching!",
-                    "Thanks for watching!"
-                ]
-                if transcribed_text and energy > 0.200 and transcribed_text not in frases_ignoradas:
+                if transcribed_text and energy > 0.200 and transcribed_text :
                     timestamp = time.time()
                     cola_subtitulos.append((transcribed_text, timestamp))
                     with open(TXT_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{transcribed_text}<br>\n")
-                    with open(TXT_FILE2, "a", encoding="utf-8") as f2:
-                        f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] {hora} - Tu: {transcribed_text}\n")
+                    #with open(TXT_FILE2, "a", encoding="utf-8") as f2:
+                        #f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] {hora} - Tu: {transcribed_text}\n")
                 
                 ahora = time.time()
                 cola_subtitulos = [(txt, t) for txt, t in cola_subtitulos if ahora - t < 2]
