@@ -26,9 +26,10 @@ class speechToText:
         RATE = 16000
         CHUNK_SIZE_MS = 3000
         CHUNK = int(RATE * CHUNK_SIZE_MS / 1000)
-        fecha_hora = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        fecha = datetime.datetime.now().strftime("%Y-%m-%d")
+        hora = datetime.datetime.now().strftime("%H:%M:%S")
         TXT_FILE = "./subtitle/subt.txt"
-        TXT_FILE2 = f"./subtitle/backup_{fecha_hora}.txt"
+        TXT_FILE2 = f"./subtitle/backup_{fecha}.txt"
 
         os.makedirs(os.path.dirname("./subtitle/"), exist_ok=True)
         with open(TXT_FILE, "a", encoding="utf-8"):
@@ -62,7 +63,7 @@ class speechToText:
                 end_time = time.time()
                 energy = np.linalg.norm(audio_np)
                 latencia = end_time - start_time
-                print(f"[{name_device}] Latencia: {latencia:.2f}s | Energía: {energy:.3f}   ", end='\r')
+                print(f"[{name_device}] Latencia: {latencia:.2f}s | Energía: {energy:.3f} ", end='\r')
                 frases_ignoradas = [
                     "Thank you for watching!",
                     "Thanks for watching!"
@@ -73,7 +74,7 @@ class speechToText:
                     with open(TXT_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{transcribed_text}<br>\n")
                     with open(TXT_FILE2, "a", encoding="utf-8") as f2:
-                        f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] Tu: {transcribed_text}\n")
+                        f2.write(f" ({name_device}) [Latencia: {latencia:.2f}s] | [Energía: {energy:.3f}] {hora} - Tu: {transcribed_text}\n")
                 
                 ahora = time.time()
                 cola_subtitulos = [(txt, t) for txt, t in cola_subtitulos if ahora - t < 2]
