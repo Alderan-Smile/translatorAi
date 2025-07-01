@@ -1,4 +1,3 @@
-from service.translator import translatorFull
 from service.spToText import speechToText
 import os
 import pyaudio
@@ -9,14 +8,11 @@ if sys.platform == "win32":
     os.system("chcp 65001")
     sys.stdout.reconfigure(encoding='utf-8')
 
-translat = translatorFull()
 talkToText = speechToText()
 optiModel = optimizadorModelos()
 p = pyaudio.PyAudio()
 nameDevice: str = ""
 
-#inputText = "Bienvenido invocador, ¿cómo estás?, soy un bot de traducción, ¿en qué puedo ayudarte hoy?"
-#translat.realSub(inputText)
 print("Bienvenido al subtitulador automatico.\n")
 
 # Mostrar dispositivos de entrada habilitados

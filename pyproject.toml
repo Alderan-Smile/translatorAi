@@ -8,16 +8,15 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "whisper",
+    "faster-whisper",
     "pyaudio",
     "numpy",
     "soundfile",
     "transformers",
     "torch",
     "optimum[openvino]",
-    "faster-whisper",
     "ctranslate2",
-    "sentencepiece",
+    "sentencepiece"
 ]
 
 [tool.poetry]
