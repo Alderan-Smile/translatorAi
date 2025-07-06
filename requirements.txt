@@ -8,3 +8,4 @@ optimum[openvino]
 ctranslate2
 sentencepiece
 setuptools<81
+ffmpeg-python

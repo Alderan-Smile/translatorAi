@@ -5,6 +5,7 @@ import threading
 import numpy as np
 import soundfile as sf
 import time
+import ffmpeg
 import sys
 import gc
 from service.fileWriter import controlArchivos
@@ -94,6 +95,62 @@ class speechToText:
             stream.close()
             p.terminate()
             print("Stream cerrado y PyAudio terminado.")
+
+    def transcribir_archivo_a_srt(self, ruta_entrada, modelo_audio):
+        """
+        Transcribe un archivo de audio/video a subtítulos SRT usando faster-whisper.
+        Muestra la duración total y el progreso en porcentaje y tiempo.
+        """
+        base, _ = os.path.splitext(os.path.basename(ruta_entrada))
+        ruta_salida_srt = f"./subtitle/{base}.srt"
+        
+        # Obtener duración total con ffmpeg
+        
+        try:
+            probe = ffmpeg.probe(ruta_entrada)
+            duration = float(probe['format']['duration'])
+        except Exception as e:
+            print(f"No se pudo obtener la duración del archivo: {e}")
+            duration = None
+
+        if duration:
+            minutos = int(duration // 60)
+            segundos = int(duration % 60)
+            print(f"Duración total del archivo: {minutos} min {segundos} s ({duration:.2f} segundos)")
+        else:
+            print("Duración total del archivo: desconocida")
+
+        local_model_path = os.path.abspath(f"../resources/faster-whisper-{modelo_audio}-int8")
+        model = WhisperModel(
+            local_model_path, 
+            ##device="cuda", 
+            device="cpu",
+            compute_type="int8")
+
+        print(f"Transcribiendo archivo: {ruta_entrada}")
+        segments, info = model.transcribe(ruta_entrada, beam_size=5, language="es", task="transcribe")
+
+        def format_timestamp(seconds):
+            h = int(seconds // 3600)
+            m = int((seconds % 3600) // 60)
+            s = int(seconds % 60)
+            ms = int((seconds - int(seconds)) * 1000)
+            return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+        with open(ruta_salida_srt, "w", encoding="utf-8") as f:
+            for i, segment in enumerate(segments, 1):
+                start = format_timestamp(segment.start)
+                end = format_timestamp(segment.end)
+                text = segment.text.strip()
+                f.write(f"{i}\n{start} --> {end}\n{text}\n\n")
+                # Mostrar progreso
+                if duration:
+                    porcentaje = min(100, (segment.end / duration) * 100)
+                    print(
+                        f"[SRT] Progreso: {porcentaje:6.2f}% | Tiempo: {segment.end:.1f}s / {duration:.1f}s",
+                        end='\r'
+                    )
+        print("\nSRT generado en:", ruta_salida_srt)
 
     def clear_console(self):
         print('\r' + ' ' * 120 + '\r', end='')

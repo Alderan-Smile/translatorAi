@@ -16,6 +16,7 @@ dependencies = [
     "torch",
     "optimum[openvino]",
     "ctranslate2",
+    "ffmpeg-python",
     "sentencepiece"
 ]
 
