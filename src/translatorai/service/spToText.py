@@ -1,5 +1,6 @@
 import os
 from faster_whisper import WhisperModel
+import tempfile
 import pyaudio
 import threading
 import numpy as np
@@ -99,36 +100,54 @@ class speechToText:
     def transcribir_archivo_a_srt(self, ruta_entrada, modelo_audio):
         """
         Transcribe un archivo de audio/video a subtítulos SRT usando faster-whisper.
-        Muestra la duración total y el progreso en porcentaje y tiempo.
+        Extrae el audio a WAV temporalmente para saltar errores/cortes en el stream.
         """
         base, _ = os.path.splitext(os.path.basename(ruta_entrada))
         ruta_salida_srt = f"./subtitle/{base}.srt"
-        
-        # Obtener duración total con ffmpeg
-        
+
+        # Extraer audio a WAV temporal
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_wav:
+            wav_path = tmp_wav.name
         try:
-            probe = ffmpeg.probe(ruta_entrada)
+            # -err_detect ignore_err: ignora errores de stream
+            ffmpeg.input(ruta_entrada).output(
+                wav_path, 
+                format='wav', 
+                acodec='pcm_s16le', 
+                ac=1, 
+                ar='16000', 
+                loglevel='error', 
+                **{'err_detect': 'ignore_err'}
+            ).overwrite_output().run()
+        except Exception as e:
+            print(f"Error extrayendo audio: {e}")
+            return
+
+        # Obtener duración total del WAV
+        try:
+            probe = ffmpeg.probe(wav_path)
             duration = float(probe['format']['duration'])
         except Exception as e:
-            print(f"No se pudo obtener la duración del archivo: {e}")
+            print(f"No se pudo obtener la duración del audio extraído: {e}")
             duration = None
 
         if duration:
             minutos = int(duration // 60)
             segundos = int(duration % 60)
-            print(f"Duración total del archivo: {minutos} min {segundos} s ({duration:.2f} segundos)")
+            print(f"Duración total del audio extraído: {minutos} min {segundos} s ({duration:.2f} segundos)")
         else:
-            print("Duración total del archivo: desconocida")
+            print("Duración total del audio extraído: desconocida")
 
         local_model_path = os.path.abspath(f"../resources/faster-whisper-{modelo_audio}-int8")
         model = WhisperModel(
             local_model_path, 
-            ##device="cuda", 
-            device="cpu",
-            compute_type="int8")
+            device="cuda",
+            ##device="cpu",
+            compute_type="int8"
+        )
 
         print(f"Transcribiendo archivo: {ruta_entrada}")
-        segments, info = model.transcribe(ruta_entrada, beam_size=5, language="es", task="transcribe")
+        segments, info = model.transcribe(wav_path, beam_size=5, language="es", task="transcribe")
 
         def format_timestamp(seconds):
             h = int(seconds // 3600)
@@ -143,7 +162,6 @@ class speechToText:
                 end = format_timestamp(segment.end)
                 text = segment.text.strip()
                 f.write(f"{i}\n{start} --> {end}\n{text}\n\n")
-                # Mostrar progreso
                 if duration:
                     porcentaje = min(100, (segment.end / duration) * 100)
                     print(
@@ -151,6 +169,12 @@ class speechToText:
                         end='\r'
                     )
         print("\nSRT generado en:", ruta_salida_srt)
+
+        # Limpia el archivo temporal
+        try:
+            os.remove(wav_path)
+        except Exception:
+            pass
 
     def clear_console(self):
         print('\r' + ' ' * 120 + '\r', end='')
