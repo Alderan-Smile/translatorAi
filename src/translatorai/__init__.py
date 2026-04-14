@@ -2,14 +2,17 @@ from service.spToText import speechToText
 import os
 import pyaudio
 import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'resources')))
-from optimumPrime import optimizadorModelos
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RESOURCES_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "resources"))
+
 if sys.platform == "win32":
     os.system("chcp 65001")
     sys.stdout.reconfigure(encoding='utf-8')
 
 talkToText = speechToText()
-optiModel = optimizadorModelos()
 p = pyaudio.PyAudio()
 nameDevice: str = ""
 
@@ -43,7 +46,7 @@ for _ in range(rongoLineasDispo):
 
 # Buscar modelos Whisper disponibles
 rongoLineaswhisper = 2
-resources_path = os.path.abspath("../resources/")
+resources_path = RESOURCES_DIR
 modelos_whisper = []
 for d in os.listdir(resources_path):
     if d.startswith("faster-whisper-") and os.path.isdir(os.path.join(resources_path, d)):
@@ -54,6 +57,8 @@ for d in os.listdir(resources_path):
 
 if not modelos_whisper:
     print("No se encontraron modelos Whisper en la carpeta resources y se descargaran ahora, por favor espere")
+    from optimumPrime import optimizadorModelos
+    optiModel = optimizadorModelos()
     optiModel.optiModeloWhisper()
     print("Descarga Completada, ahora se reiniciara el aplicativo.")
     if sys.platform == "win32":
